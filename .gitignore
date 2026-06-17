@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+target/
+src-tauri/target/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+
+# Local app data and test vaults
+.local/
+vaults/
+test-vault/
+
