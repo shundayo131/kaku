@@ -116,10 +116,10 @@ export default function App() {
             </div>
           )}
 
-          <div className="editor-scroll">
-            {activeName ? (
-              <Editor content={content} onChange={setContent} />
-            ) : (
+          {activeName ? (
+            <Editor key={activePath} content={content} onChange={setContent} />
+          ) : (
+            <div className="editor-scroll">
               <div className="empty">
                 <h2>Start writing</h2>
                 <p>
@@ -136,8 +136,8 @@ export default function App() {
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </section>
       </section>
 

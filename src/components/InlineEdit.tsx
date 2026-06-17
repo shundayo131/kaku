@@ -12,12 +12,20 @@ type Phase = "input" | "loading" | "preview";
 type Props = {
   top: number;
   original: string;
+  autoFocus: boolean;
   requestEdit: (instruction: string, original: string) => Promise<string>;
   onAccept: (result: string) => void;
   onClose: () => void;
 };
 
-export function InlineEdit({ top, original, requestEdit, onAccept, onClose }: Props) {
+export function InlineEdit({
+  top,
+  original,
+  autoFocus,
+  requestEdit,
+  onAccept,
+  onClose,
+}: Props) {
   const [instruction, setInstruction] = useState("");
   const [phase, setPhase] = useState<Phase>("input");
   const [result, setResult] = useState("");
@@ -26,8 +34,10 @@ export function InlineEdit({ top, original, requestEdit, onAccept, onClose }: Pr
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    // Only steal focus from the editor when explicitly invoked (⌘K), so a
+    // mouse selection leaves the editor editable (Delete/typing still work).
+    if (autoFocus) inputRef.current?.focus();
+  }, [autoFocus]);
 
   const run = useCallback(
     async (instr: string) => {
@@ -57,6 +67,8 @@ export function InlineEdit({ top, original, requestEdit, onAccept, onClose }: Pr
     <div
       className="inline-edit"
       style={{ top }}
+      onMouseDown={(e) => e.stopPropagation()}
+      onMouseUp={(e) => e.stopPropagation()}
       onKeyDown={(e) => {
         if (e.key === "Escape") {
           e.preventDefault();

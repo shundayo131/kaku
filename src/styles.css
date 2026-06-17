@@ -261,8 +261,8 @@ button {
 
 /* ---------- Editor ---------- */
 .editor-pane {
-  display: grid;
-  grid-template-rows: 52px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -274,6 +274,8 @@ button {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
+  flex: none;
+  height: 52px;
   padding: 0 18px;
   border-bottom: 1px solid var(--line);
 }
@@ -331,47 +333,78 @@ button {
   opacity: 0.7;
 }
 
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .editor-scroll {
+  flex: 1;
   min-height: 0;
   overflow: auto;
 }
 
+/* ---------- Formatting toolbar ---------- */
+.format-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 42px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.tb {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.tb:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.tb.on {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.tb:disabled {
+  color: var(--faint);
+}
+
+.tb-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 5px;
+  background: var(--line-2);
+}
+
+/* ---------- Tiptap content ---------- */
 .editor-surface {
   position: relative;
   max-width: 760px;
   margin: 0 auto;
+  padding: 36px 56px 160px;
 }
 
-.markdown-input {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  margin: 0;
-  padding: 40px 56px 120px;
-  border: 0;
-  outline: 0;
-  resize: none;
-  overflow: hidden; /* height is driven by JS auto-grow; outer container scrolls */
-  background: transparent;
-  color: var(--ink-soft);
-  font-family: var(--serif);
-  font-size: 18px;
-  line-height: 1.74;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.markdown-input::placeholder {
-  color: var(--faint);
-}
-
-/* Persistent selection highlight (shown while the edit button/panel is up) */
+/* Selection highlight that persists while the inline-edit panel is open. */
 .sel-highlight-layer {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -379,6 +412,110 @@ button {
   position: absolute;
   background: rgba(47, 111, 237, 0.18);
   border-radius: 2px;
+}
+
+.ProseMirror {
+  outline: none;
+  color: var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.74;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.85em;
+}
+
+.ProseMirror h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.ProseMirror h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ProseMirror h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Generous space on both sides of a heading (first heading gets none above,
+   since it has no preceding sibling — just the surface's top padding). */
+.ProseMirror * + :is(h1, h2, h3) {
+  margin-top: 1.2em;
+}
+
+.ProseMirror :is(h1, h2, h3) + * {
+  margin-top: 0.7em;
+}
+
+.ProseMirror p {
+  margin: 0;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 26px;
+}
+
+.ProseMirror li > p {
+  margin: 0;
+}
+
+.ProseMirror blockquote {
+  margin: 0;
+  padding-left: 18px;
+  border-left: 3px solid var(--line-2);
+  color: var(--muted);
+}
+
+.ProseMirror a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ProseMirror code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+
+.ProseMirror pre {
+  padding: 12px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: "Write in Markdown…";
+  float: left;
+  height: 0;
+  color: var(--faint);
+  pointer-events: none;
 }
 
 .hint-kbd {
