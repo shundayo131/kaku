@@ -1,8 +1,7 @@
 // Which provider + model the AI features call. Persisted locally (non-secret).
 
-export type ActiveModel = { provider: string; model: string };
-
-const STORAGE_KEY = "writer.activeModel.v1";
+import type { ActiveModel } from "../types";
+import { STORAGE_KEYS, readJSON, writeJSON } from "./storage";
 
 export const PROVIDERS = ["anthropic", "openai", "gemini", "kimi"] as const;
 
@@ -23,15 +22,12 @@ export const DEFAULT_MODEL: Record<string, string> = {
 };
 
 export function getActiveModel(): ActiveModel {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as ActiveModel;
-  } catch {
-    /* fall through to default */
-  }
-  return { provider: "anthropic", model: DEFAULT_MODEL.anthropic };
+  return readJSON<ActiveModel>(STORAGE_KEYS.activeModel, {
+    provider: "anthropic",
+    model: DEFAULT_MODEL.anthropic,
+  });
 }
 
 export function setActiveModel(m: ActiveModel): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(m));
+  writeJSON(STORAGE_KEYS.activeModel, m);
 }

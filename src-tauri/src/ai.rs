@@ -123,3 +123,35 @@ fn redact_prefixed(input: &str, prefix: &str) -> String {
     out.push_str(rest);
     out
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn redacts_anthropic_key() {
+        let input = "my key is sk-ant-api03-abcdefabcdefabcdefabcdef done";
+        let out = scrub(input);
+        assert!(out.contains("[redacted-key]"));
+        assert!(!out.contains("abcdefabcdef"));
+        assert!(out.starts_with("my key is "));
+        assert!(out.ends_with(" done"));
+    }
+
+    #[test]
+    fn redacts_generic_sk_key() {
+        assert_eq!(scrub("sk-proj-0123456789abcdef0123456789"), "[redacted-key]");
+    }
+
+    #[test]
+    fn leaves_ordinary_text_untouched() {
+        // "task-list" and "risk-free" contain "sk-" but no long key follows.
+        let input = "The task-list and risk-free plan are fine.";
+        assert_eq!(scrub(input), input);
+    }
+
+    #[test]
+    fn empty_input() {
+        assert_eq!(scrub(""), "");
+    }
+}

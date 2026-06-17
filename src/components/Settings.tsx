@@ -1,20 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import type { ActiveModel, KeyInfo } from "../types";
+import { listKeys, setKey, deleteKey } from "../lib/tauri/keys";
 import {
-  type ActiveModel,
   PROVIDERS,
   PROVIDER_LABELS,
   DEFAULT_MODEL,
   getActiveModel,
   setActiveModel,
-} from "./model";
-
-type KeyInfo = {
-  id: string;
-  label: string;
-  present: boolean;
-  masked: string;
-};
+} from "../lib/model";
 
 const DISCLOSURE =
   "This app uses your own API key to call LLM providers directly from your " +
@@ -34,7 +27,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
 
   const refresh = useCallback(async () => {
     try {
-      setKeys(await invoke<KeyInfo[]>("list_keys"));
+      setKeys(await listKeys());
       setError(null);
     } catch (e) {
       setError(String(e));
@@ -50,7 +43,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
       const key = drafts[id]?.trim();
       if (!key) return;
       try {
-        await invoke("set_key", { provider: id, key });
+        await setKey(id, key);
         setDrafts((d) => ({ ...d, [id]: "" }));
         await refresh();
       } catch (e) {
@@ -63,7 +56,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
   const remove = useCallback(
     async (id: string) => {
       try {
-        await invoke("delete_key", { provider: id });
+        await deleteKey(id);
         await refresh();
       } catch (e) {
         setError(String(e));
@@ -110,9 +103,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
             <input
               value={active.model}
               placeholder="model id"
-              onChange={(e) =>
-                updateActive({ ...active, model: e.target.value })
-              }
+              onChange={(e) => updateActive({ ...active, model: e.target.value })}
             />
           </div>
 
