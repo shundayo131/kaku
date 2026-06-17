@@ -17,6 +17,7 @@ describe("markdown round-trip", () => {
     blockquote: "> a quote",
     "code block": "```js\nconst x = 1;\n```",
     paragraphs: "First paragraph.\n\nSecond paragraph.",
+    table: "| a | b |\n| --- | --- |\n| 1 | 2 |",
   };
 
   for (const [name, md] of Object.entries(cases)) {

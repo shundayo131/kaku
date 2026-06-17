@@ -91,21 +91,15 @@ export default function App() {
         />
 
         <section className="editor-pane">
-          <div className="doc-toolbar">
-            <div>
-              <div className="doc-title">
-                {activeName ? titleOf(activeName) : "No document"}
+          {activeName && (
+            <div className="doc-toolbar">
+              <div>
+                <div className="doc-title">{titleOf(activeName)}</div>
+                <div className="doc-sub">{`${wordCount} words · Markdown · ${status}`}</div>
               </div>
-              <div className="doc-sub">
-                {activeName
-                  ? `${wordCount} words · Markdown · ${status}`
-                  : "Open or create a document to begin"}
-              </div>
-            </div>
-            {activeName && (
               <div className="hint-kbd">Select text to edit with AI</div>
-            )}
-          </div>
+            </div>
+          )}
 
           {error && (
             <div className="error-banner" role="alert">

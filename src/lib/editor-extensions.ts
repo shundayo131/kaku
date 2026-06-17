@@ -1,5 +1,6 @@
 import StarterKit from "@tiptap/starter-kit";
 import Paragraph from "@tiptap/extension-paragraph";
+import { TableKit } from "@tiptap/extension-table";
 import { Markdown } from "tiptap-markdown";
 
 // Zero-width space marks an intentionally-blank line, so empty paragraphs
@@ -32,6 +33,7 @@ const PreservingParagraph = Paragraph.extend({
 export const editorExtensions = [
   StarterKit.configure({ paragraph: false }),
   PreservingParagraph,
+  TableKit,
   Markdown.configure({
     html: false, // keep output clean Markdown, no raw HTML
     linkify: false,

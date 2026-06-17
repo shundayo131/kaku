@@ -72,6 +72,10 @@ export function Toolbar({ editor }: { editor: Editor | null }) {
         onClick={() => c().toggleBlockquote().run()}>&ldquo;</button>
       <button className={`tb ${s.codeBlock ? "on" : ""}`} title="Code block"
         onClick={() => c().toggleCodeBlock().run()}>{"{ }"}</button>
+      <button className="tb" title="Insert table"
+        onClick={() =>
+          c().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        }>⊞</button>
 
       <span className="tb-sep" />
 
