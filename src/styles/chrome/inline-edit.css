@@ -123,50 +123,16 @@
   line-height: 1.4;
 }
 
-.ie-preview {
-  display: grid;
-  gap: 6px;
-  max-height: 320px;
-  overflow: auto;
-  font-family: var(--serif);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.ie-old {
-  padding: 7px 9px;
-  border-radius: 7px;
-  background: var(--surface-2);
+.ie-draft-hint {
   color: var(--soft);
-  text-decoration: line-through;
-  text-decoration-color: var(--faint);
-}
-
-.ie-new {
-  padding: 7px 9px;
-  border-radius: 7px;
-  background: var(--accent-soft);
-  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .ie-controls {
   display: flex;
   justify-content: flex-end;
   gap: 6px;
-}
-
-.ie-accept {
-  height: 30px;
-  padding: 0 13px;
-  border-radius: 7px;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.ie-accept:hover {
-  background: var(--ink-strong);
 }
 
 .ie-btn {

@@ -24,7 +24,8 @@ type Props = {
   buildPrompt: (instruction: string, original: string) => string;
   /** Runs a conversation and returns the trimmed result text. */
   run: (messages: ChatMessage[]) => Promise<string>;
-  onAccept: (result: string) => void;
+  /** Show the latest draft inline in the editor (accept/reject happen there). */
+  onDraft: (text: string) => void;
   onClose: () => void;
 };
 
@@ -34,7 +35,7 @@ export function InlineEdit({
   autoFocus,
   buildPrompt,
   run,
-  onAccept,
+  onDraft,
   onClose,
 }: Props) {
   const [instruction, setInstruction] = useState("");
@@ -82,12 +83,13 @@ export function InlineEdit({
         setResult(r);
         setInstruction("");
         setPhase("preview");
+        onDraft(r);
       } catch (e) {
         setError(String(e));
         setPhase(fallback);
       }
     },
-    [messages, buildPrompt, original, run],
+    [messages, buildPrompt, original, run, onDraft],
   );
 
   // Re-roll the latest draft: resend the conversation up to the last user turn.
@@ -101,11 +103,12 @@ export function InlineEdit({
       setMessages([...convo, { role: "assistant", content: r }]);
       setResult(r);
       setPhase("preview");
+      onDraft(r);
     } catch (e) {
       setError(String(e));
       setPhase("preview");
     }
-  }, [messages, run]);
+  }, [messages, run, onDraft]);
 
   const loading = phase === "loading";
   // Layout follows whether a draft exists, not the transient loading state, so
@@ -126,9 +129,9 @@ export function InlineEdit({
       }}
     >
       {hasDraft && (
-        <div className="ie-preview">
-          <div className="ie-old">{original}</div>
-          <div className="ie-new">{result}</div>
+        <div className="ie-draft-hint">
+          Review the change in the document — accept ✓ or reject ✕ inline, or
+          ask for another change below.
         </div>
       )}
 
@@ -187,14 +190,8 @@ export function InlineEdit({
 
       {hasDraft && !loading && (
         <div className="ie-controls">
-          <button className="ie-accept" onClick={() => onAccept(result)}>
-            ✓ Accept
-          </button>
           <button className="ie-btn" onClick={() => void retry()} title="Retry">
             ↻ Retry
-          </button>
-          <button className="ie-btn" onClick={onClose} title="Discard">
-            ✕ Discard
           </button>
         </div>
       )}
