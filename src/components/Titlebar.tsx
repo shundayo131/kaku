@@ -16,18 +16,20 @@ const SettingsIcon = (
 export function Titlebar({ title, status, busy, hasDoc, onOpenSettings }: Props) {
   return (
     <header className="titlebar" data-tauri-drag-region>
-      <span />
-      <div className="title">
+      <span data-tauri-drag-region />
+      <div className="title" data-tauri-drag-region>
         {hasDoc ? (
           <>
             {title}
-            <span className={`saved ${busy ? "dirty" : ""}`}>{status}</span>
+            <span className={`saved ${busy ? "dirty" : ""}`} data-tauri-drag-region>
+              {status}
+            </span>
           </>
         ) : (
           "Writer"
         )}
       </div>
-      <div className="right">
+      <div className="right" data-tauri-drag-region>
         <button
           className="icon-btn"
           onClick={onOpenSettings}

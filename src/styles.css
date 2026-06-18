@@ -75,6 +75,11 @@ button {
   align-items: center;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
+  /* Drag regions must not be text-selectable, or a drag selects text instead
+     of moving the window. */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
 }
 
 .titlebar .title {
