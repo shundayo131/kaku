@@ -3,7 +3,7 @@ import type { Editor } from "@tiptap/react";
 import type { Rect } from "../types";
 import { getActiveModel } from "../lib/model";
 import { getMarkdown } from "../lib/markdown";
-import { modelComplete } from "../lib/tauri/ai";
+import { modelComplete, type ChatMessage } from "../lib/tauri/ai";
 
 const EDIT_SYSTEM =
   "You are an inline editor in a Markdown writing app. You rewrite the user's " +
@@ -77,9 +77,10 @@ export function useAiEdit(
     setHlRects([]);
   }, []);
 
-  const requestEdit = useCallback(
-    async (instruction: string, original: string) => {
-      const { provider, model } = getActiveModel();
+  /** Build the opening user turn: the instruction, the selection to rewrite,
+   * and (capped) the surrounding document for context. */
+  const buildEditPrompt = useCallback(
+    (instruction: string, original: string) => {
       const doc = editor ? getMarkdown(editor).trim() : "";
       const context =
         doc && doc !== original.trim()
@@ -89,22 +90,24 @@ export function useAiEdit(
                 : doc
             }\n"""\n\n`
           : "";
-      const text = await modelComplete({
-        provider,
-        model,
-        system: EDIT_SYSTEM,
-        messages: [
-          {
-            role: "user",
-            content: `${context}Instruction: ${instruction}\n\nText to rewrite (a selection from the document above):\n${original}`,
-          },
-        ],
-        maxTokens: 1024,
-      });
-      return text.trim();
+      return `${context}Instruction: ${instruction}\n\nText to rewrite (a selection from the document above):\n${original}`;
     },
     [editor],
   );
+
+  /** Run a conversation through the active model and return the trimmed text.
+   * Multi-turn: pass the running [user, assistant, user, …] history to refine. */
+  const runConversation = useCallback(async (messages: ChatMessage[]) => {
+    const { provider, model } = getActiveModel();
+    const text = await modelComplete({
+      provider,
+      model,
+      system: EDIT_SYSTEM,
+      messages,
+      maxTokens: 1024,
+    });
+    return text.trim();
+  }, []);
 
   const acceptEdit = useCallback(
     (result: string) => {
@@ -119,5 +122,5 @@ export function useAiEdit(
     [editor, edit, close],
   );
 
-  return { edit, hlRects, open, close, requestEdit, acceptEdit };
+  return { edit, hlRects, open, close, buildEditPrompt, runConversation, acceptEdit };
 }

@@ -31,10 +31,8 @@ export function Editor({ content, onChange }: Props) {
     },
   });
 
-  const { edit, hlRects, open, close, requestEdit, acceptEdit } = useAiEdit(
-    editor,
-    surfaceRef,
-  );
+  const { edit, hlRects, open, close, buildEditPrompt, runConversation, acceptEdit } =
+    useAiEdit(editor, surfaceRef);
   closeRef.current = close;
 
   const openFromSelection = (autoFocus: boolean) => {
@@ -75,10 +73,12 @@ export function Editor({ content, onChange }: Props) {
           )}
           {edit && (
             <InlineEdit
+              key={`${edit.from}-${edit.to}`}
               top={edit.top}
               original={edit.original}
               autoFocus={edit.autoFocus}
-              requestEdit={requestEdit}
+              buildPrompt={buildEditPrompt}
+              run={runConversation}
               onAccept={acceptEdit}
               onClose={close}
             />

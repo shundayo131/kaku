@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import type { ChatMessage } from "../lib/tauri/ai";
 
 const QUICK_ACTIONS = [
   { label: "Fix grammar", instruction: "Fix grammar and spelling. Preserve meaning and tone." },
@@ -19,7 +20,10 @@ type Props = {
   top: number;
   original: string;
   autoFocus: boolean;
-  requestEdit: (instruction: string, original: string) => Promise<string>;
+  /** Builds the opening user turn (instruction + selection + doc context). */
+  buildPrompt: (instruction: string, original: string) => string;
+  /** Runs a conversation and returns the trimmed result text. */
+  run: (messages: ChatMessage[]) => Promise<string>;
   onAccept: (result: string) => void;
   onClose: () => void;
 };
@@ -28,7 +32,8 @@ export function InlineEdit({
   top,
   original,
   autoFocus,
-  requestEdit,
+  buildPrompt,
+  run,
   onAccept,
   onClose,
 }: Props) {
@@ -36,7 +41,8 @@ export function InlineEdit({
   const [phase, setPhase] = useState<Phase>("input");
   const [result, setResult] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const lastInstruction = useRef("");
+  // The running conversation (user/assistant turns). Empty until the first run.
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -45,7 +51,7 @@ export function InlineEdit({
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
 
-  // Grow the textarea with its content, up to the CSS max-height (then scroll).
+  // Grow the active textarea with its content, up to the CSS max-height.
   useLayoutEffect(() => {
     const el = inputRef.current;
     if (!el) return;
@@ -53,29 +59,58 @@ export function InlineEdit({
     el.style.height = `${el.scrollHeight}px`;
   }, [instruction, phase]);
 
-  const run = useCallback(
+  // Submit the first instruction, or — once a draft exists — a refinement turn
+  // on top of the current draft (real multi-turn conversation).
+  const submit = useCallback(
     async (instr: string) => {
       const text = instr.trim();
       if (!text) return;
-      lastInstruction.current = text;
+      const fallback: Phase = messages.length ? "preview" : "input";
+      const convo: ChatMessage[] = messages.length
+        ? [...messages, { role: "user", content: text }]
+        : [{ role: "user", content: buildPrompt(text, original) }];
       setPhase("loading");
       setError(null);
       try {
-        const r = await requestEdit(text, original);
+        const r = await run(convo);
         if (!r) {
           setError("The model returned nothing.");
-          setPhase("input");
+          setPhase(fallback);
           return;
         }
+        setMessages([...convo, { role: "assistant", content: r }]);
         setResult(r);
+        setInstruction("");
         setPhase("preview");
       } catch (e) {
         setError(String(e));
-        setPhase("input");
+        setPhase(fallback);
       }
     },
-    [requestEdit, original],
+    [messages, buildPrompt, original, run],
   );
+
+  // Re-roll the latest draft: resend the conversation up to the last user turn.
+  const retry = useCallback(async () => {
+    if (!messages.length) return;
+    const convo = messages.slice(0, -1); // drop the trailing assistant draft
+    setPhase("loading");
+    setError(null);
+    try {
+      const r = await run(convo);
+      setMessages([...convo, { role: "assistant", content: r }]);
+      setResult(r);
+      setPhase("preview");
+    } catch (e) {
+      setError(String(e));
+      setPhase("preview");
+    }
+  }, [messages, run]);
+
+  const loading = phase === "loading";
+  // Layout follows whether a draft exists, not the transient loading state, so
+  // the preview stays visible while a refinement is in flight.
+  const hasDraft = result !== "";
 
   return (
     <div
@@ -90,73 +125,78 @@ export function InlineEdit({
         }
       }}
     >
-      {phase !== "preview" ? (
-        <>
-          <div className="ie-quick">
-            {QUICK_ACTIONS.map((q) => (
-              <button
-                key={q.label}
-                className="ie-chip"
-                disabled={phase === "loading"}
-                onClick={() => void run(q.instruction)}
-              >
-                {q.label}
-              </button>
-            ))}
-          </div>
-          <div className="ie-input-row">
-            <textarea
-              ref={inputRef}
-              className="ie-textarea"
-              rows={1}
-              value={instruction}
-              disabled={phase === "loading"}
-              placeholder={phase === "loading" ? "Editing…" : "Describe the edit…"}
-              onChange={(e) => setInstruction(e.target.value)}
-              onKeyDown={(e) => {
-                // Enter submits; Shift+Enter inserts a newline.
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void run(instruction);
-                }
-              }}
-            />
+      {hasDraft && (
+        <div className="ie-preview">
+          <div className="ie-old">{original}</div>
+          <div className="ie-new">{result}</div>
+        </div>
+      )}
+
+      {!hasDraft && (
+        <div className="ie-quick">
+          {QUICK_ACTIONS.map((q) => (
             <button
-              className="ie-send"
-              disabled={phase === "loading" || !instruction.trim()}
-              onClick={() => void run(instruction)}
-              aria-label="Run edit"
+              key={q.label}
+              className="ie-chip"
+              disabled={loading}
+              onClick={() => void submit(q.instruction)}
             >
-              {phase === "loading" ? "…" : "↑"}
+              {q.label}
             </button>
-            <button className="ie-x" onClick={onClose} aria-label="Close">
-              ✕
-            </button>
-          </div>
-          {error && <div className="ie-error">{error}</div>}
-        </>
-      ) : (
-        <>
-          <div className="ie-preview">
-            <div className="ie-old">{original}</div>
-            <div className="ie-new">{result}</div>
-          </div>
-          <div className="ie-controls">
-            <button className="ie-accept" onClick={() => onAccept(result)}>
-              ✓ Accept
-            </button>
-            <button
-              className="ie-btn"
-              onClick={() => void run(lastInstruction.current)}
-              title="Retry"
-            >
-              ↻ Retry
-            </button>
-            <button className="ie-btn" onClick={onClose} title="Discard">
-              ✕ Discard
-            </button>
-          </div>
-        </>
+          ))}
+        </div>
+      )}
+
+      <div className="ie-input-row">
+        <textarea
+          ref={inputRef}
+          className="ie-textarea"
+          rows={1}
+          value={instruction}
+          disabled={loading}
+          placeholder={
+            loading
+              ? "Editing…"
+              : hasDraft
+                ? "Ask for a change…"
+                : "Describe the edit…"
+          }
+          onChange={(e) => setInstruction(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter submits; Shift+Enter inserts a newline.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void submit(instruction);
+            }
+          }}
+        />
+        <button
+          className="ie-send"
+          disabled={loading || !instruction.trim()}
+          onClick={() => void submit(instruction)}
+          aria-label={hasDraft ? "Refine" : "Run edit"}
+        >
+          {loading ? "…" : "↑"}
+        </button>
+        <button className="ie-x" onClick={onClose} aria-label="Close">
+          ✕
+        </button>
+      </div>
+
+      {error && <div className="ie-error">{error}</div>}
+
+      {hasDraft && !loading && (
+        <div className="ie-controls">
+          <button className="ie-accept" onClick={() => onAccept(result)}>
+            ✓ Accept
+          </button>
+          <button className="ie-btn" onClick={() => void retry()} title="Retry">
+            ↻ Retry
+          </button>
+          <button className="ie-btn" onClick={onClose} title="Discard">
+            ✕ Discard
+          </button>
+        </div>
       )}
     </div>
   );
