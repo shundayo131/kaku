@@ -23,7 +23,6 @@ type Edit = {
   from: number;
   to: number;
   original: string;
-  top: number;
   autoFocus: boolean;
 };
 
@@ -66,9 +65,8 @@ export function useAiEdit(
       if (!editor || !surface || from === to) return;
       const original = editor.state.doc.textBetween(from, to, "\n");
       const sr = surface.getBoundingClientRect();
-      const coords = editor.view.coordsAtPos(to);
       setHlRects(rangeRects(editor, from, to, sr));
-      setEdit({ from, to, original, top: coords.bottom - sr.top + 6, autoFocus });
+      setEdit({ from, to, original, autoFocus });
     },
     [editor, surfaceRef],
   );

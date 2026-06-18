@@ -17,7 +17,6 @@ const QUICK_ACTIONS = [
 type Phase = "input" | "loading" | "preview";
 
 type Props = {
-  top: number;
   original: string;
   autoFocus: boolean;
   /** Builds the opening user turn (instruction + selection + doc context). */
@@ -30,7 +29,6 @@ type Props = {
 };
 
 export function InlineEdit({
-  top,
   original,
   autoFocus,
   buildPrompt,
@@ -118,7 +116,6 @@ export function InlineEdit({
   return (
     <div
       className="inline-edit"
-      style={{ top }}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
       onKeyDown={(e) => {

@@ -121,20 +121,19 @@ export function Editor({ content, onChange }: Props) {
               ))}
             </div>
           )}
-          {edit && (
-            <InlineEdit
-              key={`${edit.from}-${edit.to}`}
-              top={edit.top}
-              autoFocus={edit.autoFocus}
-              original={edit.original}
-              buildPrompt={buildEditPrompt}
-              run={runConversation}
-              onDraft={showDraft}
-              onClose={closeAll}
-            />
-          )}
         </div>
       </div>
+      {edit && (
+        <InlineEdit
+          key={`${edit.from}-${edit.to}`}
+          autoFocus={edit.autoFocus}
+          original={edit.original}
+          buildPrompt={buildEditPrompt}
+          run={runConversation}
+          onDraft={showDraft}
+          onClose={closeAll}
+        />
+      )}
     </div>
   );
 }
