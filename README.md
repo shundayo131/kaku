@@ -1,41 +1,84 @@
 # Kaku
 
-A local-first Markdown writing app for macOS with inline AI editing and an AI
-writing companion.
+A local-first Markdown writing app for macOS with inline AI editing.
 
-## Product Direction
+Kaku (書く, "to write") edits real `.md` files in a folder you choose — no
+account, no cloud sync, no backend. Your documents stay as plain Markdown on
+disk, and your API key stays in the macOS Keychain.
 
-Kaku is a single-user desktop app. It edits real Markdown files in a folder
-chosen by the user, similar to an Obsidian-style vault. There is no account
-system, cloud sync, or backend server. The durable document format is plain
-Markdown.
+## Features
 
-## Current Status
+- **WYSIWYG Markdown editor** (Tiptap) with a formatting toolbar — headings,
+  bold/italic/strikethrough, inline code, links, lists, quotes, code blocks,
+  tables, undo/redo.
+- **Inline AI edit** — select text, describe a change (or use a quick action:
+  fix grammar, shorten, lengthen, improve), preview the rewrite, accept or
+  discard.
+- **Local-first** — open or create real `.md` files; recent-docs sidebar;
+  debounced autosave. YAML frontmatter and blank lines are preserved.
+- **Bring your own key** — your Anthropic API key is stored in the macOS
+  Keychain and used to call the model directly from your device. It is never
+  sent anywhere else.
 
-Planning and setup only. No application scaffold has been generated yet.
+## Requirements
 
-## Initial Scope
+- macOS (Apple Silicon or Intel)
+- [Node.js](https://nodejs.org) 18+
+- [Rust](https://rustup.rs) (stable toolchain)
+- Xcode Command Line Tools. If you use full Xcode, accept its license once:
+  `sudo xcodebuild -license accept`
 
-- Open a local vault folder.
-- List, read, edit, and save `.md` files.
-- Provide a fast rich editor backed by predictable Markdown serialization.
-- Support inline AI editing on selected text.
-- Support a companion chat scoped to the active document.
-- Store provider API keys in macOS Keychain where possible.
+## Run locally
 
-## Stack Direction
+```bash
+npm install
+npm run tauri dev
+```
 
-- Tauri 2 for the native macOS shell and Rust backend.
-- React, TypeScript, and Vite for UI.
-- Tailwind CSS v4 and shadcn/ui primitives for styling and components.
-- Tiptap 3 for rich editing.
-- Provider abstraction for OpenAI, Anthropic, Grok, and local/open-source models.
+The first launch compiles the Rust shell (a few minutes); subsequent launches
+are fast and hot-reload the UI. This opens a native macOS window — it is not a
+browser tab.
 
-## Open Decisions
+## Build a distributable
 
-- First AI provider to implement.
-- Markdown parser/serializer strategy around Tiptap.
-- Whether to support source mode in the first MVP or immediately after.
-- Vault metadata strategy for app-only state such as recent files and UI prefs.
-- Import scope for PDF, DOCX, and URL ingestion.
+```bash
+npm run tauri build   # produces a .app / .dmg under src-tauri/target/release/bundle
+```
 
+## Tests
+
+```bash
+npm test                     # frontend unit tests (Vitest)
+cd src-tauri && cargo test   # Rust tests
+```
+
+## Using AI
+
+Open **Settings** (gear, top-right) → paste your **Anthropic API key** and pick
+a model id (e.g. `claude-sonnet-4-6`). Then select text in the editor and press
+**⌘K** (or use the panel that appears) to edit it with AI.
+
+> Only the Anthropic adapter is wired today. OpenAI, Gemini, and Kimi are
+> planned — see [docs/STATUS.md](docs/STATUS.md).
+
+## Tech stack
+
+- **Shell:** [Tauri 2](https://tauri.app) (Rust backend, native macOS window)
+- **UI:** React 19 + TypeScript + Vite
+- **Editor:** Tiptap 3 + tiptap-markdown
+- **Native:** `keyring` (Keychain), `reqwest` (model calls)
+
+The key never enters frontend JavaScript: Rust stores it in the Keychain and
+makes the API call. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and
+[docs/SECURITY.md](docs/SECURITY.md).
+
+## Documentation
+
+- [docs/PRODUCT_SCOPE.md](docs/PRODUCT_SCOPE.md) — what Kaku is
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — the TS / Rust boundary
+- [docs/SECURITY.md](docs/SECURITY.md) — key handling + pre-release checklist
+- [docs/STATUS.md](docs/STATUS.md) — what's done, open, and known tradeoffs
+
+## License
+
+MIT — see [LICENSE](LICENSE).
