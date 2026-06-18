@@ -1,58 +1,125 @@
 //! Model gateway. Reads the provider key from Keychain (Rust-side only),
 //! scrubs the outbound body, calls the provider, returns the completion.
 //!
-//! Milestone 2: Anthropic adapter, non-streaming. OpenAI-compatible (OpenAI +
-//! Kimi) and Google adapters, plus streaming, come next. See docs/ARCHITECTURE.md.
+//! Anthropic adapter, non-streaming, with multi-turn `messages`, optional
+//! extended thinking, and an optional server-side web-search tool. OpenAI-
+//! compatible (OpenAI + Kimi) and Google adapters, plus streaming, come next.
+//! See docs/ARCHITECTURE.md.
+
+use serde::Deserialize;
 
 const ANTHROPIC_URL: &str = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION: &str = "2023-06-01";
 
-/// A single non-streaming completion.
+/// Tokens reserved for extended thinking, added on top of the caller's desired
+/// output budget (Anthropic requires `max_tokens` > the thinking budget).
+const THINKING_BUDGET: u32 = 1024;
+
+/// One turn of conversation. `role` is "user" or "assistant".
+#[derive(Deserialize)]
+pub struct ChatMessage {
+    pub role: String,
+    pub content: String,
+}
+
+/// A single non-streaming completion over a multi-turn message list.
 #[tauri::command]
 pub async fn model_complete(
     provider: String,
     model: String,
     system: Option<String>,
-    prompt: String,
+    messages: Vec<ChatMessage>,
     max_tokens: Option<u32>,
+    thinking: Option<bool>,
+    web_search: Option<bool>,
 ) -> Result<String, String> {
-    eprintln!("[writer] model_complete: provider={provider} model={model}");
+    let thinking = thinking.unwrap_or(false);
+    let web_search = web_search.unwrap_or(false);
+    eprintln!(
+        "[kaku] model_complete: provider={provider} model={model} turns={} thinking={thinking} web_search={web_search}",
+        messages.len()
+    );
     let key = match crate::keys::get_key(&provider) {
         Ok(k) => k,
         Err(e) => {
-            eprintln!("[writer] key error: {e}");
+            eprintln!("[kaku] key error: {e}");
             return Err(e);
         }
     };
     let system = system.map(|s| scrub(&s));
-    let prompt = scrub(&prompt);
+    // Scrub every turn's content (defense in depth — same as the system prompt).
+    let messages: Vec<ChatMessage> = messages
+        .into_iter()
+        .map(|m| ChatMessage {
+            role: m.role,
+            content: scrub(&m.content),
+        })
+        .collect();
     let max_tokens = max_tokens.unwrap_or(512);
 
     let result = match provider.as_str() {
-        "anthropic" => anthropic_complete(&key, &model, system.as_deref(), &prompt, max_tokens).await,
+        "anthropic" => {
+            anthropic_complete(
+                &key,
+                &model,
+                system.as_deref(),
+                &messages,
+                max_tokens,
+                thinking,
+                web_search,
+            )
+            .await
+        }
         other => Err(format!("Provider not yet supported: {other}")),
     };
     match &result {
-        Ok(t) => eprintln!("[writer] completion ok ({} chars)", t.chars().count()),
-        Err(e) => eprintln!("[writer] completion error: {e}"),
+        Ok(t) => eprintln!("[kaku] completion ok ({} chars)", t.chars().count()),
+        Err(e) => eprintln!("[kaku] completion error: {e}"),
     }
     result
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn anthropic_complete(
     key: &str,
     model: &str,
     system: Option<&str>,
-    prompt: &str,
+    messages: &[ChatMessage],
     max_tokens: u32,
+    thinking: bool,
+    web_search: bool,
 ) -> Result<String, String> {
+    let msgs: Vec<serde_json::Value> = messages
+        .iter()
+        .map(|m| serde_json::json!({ "role": m.role, "content": m.content }))
+        .collect();
+
+    // Extended thinking consumes part of the response budget, so reserve extra
+    // on top of the caller's desired output size.
+    let body_max_tokens = if thinking {
+        max_tokens + THINKING_BUDGET
+    } else {
+        max_tokens
+    };
+
     let mut body = serde_json::json!({
         "model": model,
-        "max_tokens": max_tokens,
-        "messages": [ { "role": "user", "content": prompt } ],
+        "max_tokens": body_max_tokens,
+        "messages": msgs,
     });
     if let Some(s) = system {
         body["system"] = serde_json::Value::String(s.to_string());
+    }
+    if thinking {
+        body["thinking"] = serde_json::json!({
+            "type": "enabled",
+            "budget_tokens": THINKING_BUDGET,
+        });
+    }
+    if web_search {
+        body["tools"] = serde_json::json!([
+            { "type": "web_search_20250305", "name": "web_search", "max_uses": 5 }
+        ]);
     }
 
     let resp = reqwest::Client::new()
@@ -75,15 +142,16 @@ async fn anthropic_complete(
         return Err(format!("Anthropic {}: {}", status.as_u16(), msg));
     }
 
+    // Concatenate the text blocks. Thinking, tool-use, and web-search-result
+    // blocks carry no "text" field and are naturally skipped.
     let text = val["content"]
         .as_array()
-        .and_then(|blocks| {
+        .map(|blocks| {
             blocks
                 .iter()
                 .filter_map(|b| b["text"].as_str())
                 .collect::<Vec<_>>()
                 .join("")
-                .into()
         })
         .unwrap_or_default();
 

@@ -93,7 +93,12 @@ export function useAiEdit(
         provider,
         model,
         system: EDIT_SYSTEM,
-        prompt: `${context}Instruction: ${instruction}\n\nText to rewrite (a selection from the document above):\n${original}`,
+        messages: [
+          {
+            role: "user",
+            content: `${context}Instruction: ${instruction}\n\nText to rewrite (a selection from the document above):\n${original}`,
+          },
+        ],
         maxTokens: 1024,
       });
       return text.trim();
