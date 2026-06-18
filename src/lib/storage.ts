@@ -4,6 +4,7 @@
 export const STORAGE_KEYS = {
   recents: "writer.recents.v1",
   activeModel: "writer.activeModel.v1",
+  aiPrefs: "writer.aiPrefs.v1",
 } as const;
 
 export function readJSON<T>(key: string, fallback: T): T {

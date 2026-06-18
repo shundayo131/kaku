@@ -2,6 +2,7 @@ import { useCallback, useState, type RefObject } from "react";
 import type { Editor } from "@tiptap/react";
 import type { Rect } from "../types";
 import { getActiveModel } from "../lib/model";
+import { getAiPrefs } from "../lib/ai-prefs";
 import { getMarkdown } from "../lib/markdown";
 import { modelComplete, type ChatMessage } from "../lib/tauri/ai";
 
@@ -99,12 +100,15 @@ export function useAiEdit(
    * Multi-turn: pass the running [user, assistant, user, …] history to refine. */
   const runConversation = useCallback(async (messages: ChatMessage[]) => {
     const { provider, model } = getActiveModel();
+    const { thinking, webSearch } = getAiPrefs();
     const text = await modelComplete({
       provider,
       model,
       system: EDIT_SYSTEM,
       messages,
       maxTokens: 1024,
+      thinking,
+      webSearch,
     });
     return text.trim();
   }, []);

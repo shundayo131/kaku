@@ -8,6 +8,7 @@ import {
   getActiveModel,
   setActiveModel,
 } from "../lib/model";
+import { type AiPrefs, getAiPrefs, setAiPrefs } from "../lib/ai-prefs";
 
 const DISCLOSURE =
   "This app uses your own API key to call LLM providers directly from your " +
@@ -19,10 +20,16 @@ export function Settings({ onClose }: { onClose: () => void }) {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<ActiveModel>(getActiveModel);
+  const [prefs, setPrefs] = useState<AiPrefs>(getAiPrefs);
 
   const updateActive = useCallback((next: ActiveModel) => {
     setActive(next);
     setActiveModel(next);
+  }, []);
+
+  const updatePrefs = useCallback((next: AiPrefs) => {
+    setPrefs(next);
+    setAiPrefs(next);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -105,6 +112,43 @@ export function Settings({ onClose }: { onClose: () => void }) {
               placeholder="model id"
               onChange={(e) => updateActive({ ...active, model: e.target.value })}
             />
+          </div>
+
+          <div className="keys-section-label">AI behavior</div>
+          <div className="ai-prefs">
+            <label className="ai-toggle">
+              <span>
+                <span className="ai-toggle-name">Extended thinking</span>
+                <span className="ai-toggle-desc">
+                  Let the model reason before answering. Stays on-device — no
+                  extra network calls.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                checked={prefs.thinking}
+                onChange={(e) =>
+                  updatePrefs({ ...prefs, thinking: e.target.checked })
+                }
+              />
+            </label>
+            <label className="ai-toggle">
+              <span>
+                <span className="ai-toggle-name">Web search</span>
+                <span className="ai-toggle-desc">
+                  Let the model look up current information when it judges its
+                  knowledge is stale. Sends your query to Anthropic's search
+                  service — off by default.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                checked={prefs.webSearch}
+                onChange={(e) =>
+                  updatePrefs({ ...prefs, webSearch: e.target.checked })
+                }
+              />
+            </label>
           </div>
 
           <div className="keys-section-label">API keys</div>
