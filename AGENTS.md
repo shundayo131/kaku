@@ -21,8 +21,12 @@ chosen folder.
 
 - Shell: Tauri 2 with Rust commands for privileged/native operations.
 - UI: React + TypeScript + Vite.
-- Styling: Tailwind CSS v4 with CSS-first theme tokens.
-- Components: shadcn/ui primitives where useful, with lucide-react icons.
+- Styling: plain CSS with a design-token layer (CSS custom properties). No CSS
+  framework — not Tailwind, not shadcn/ui. All color comes from tokens; see
+  [STYLE.md](./STYLE.md), enforced by `npm run lint:css`.
+- Components: hand-written semantic components. Reach for a behavior-only
+  primitive library only with explicit approval (see dependency rule below), and
+  restyle it to the tokens.
 - Editor: Tiptap 3 for rich editing, with Markdown serialization as a first-class
   contract.
 - AI: provider abstraction owned by the app, with request proxying through Rust

@@ -1,0 +1,54 @@
+/* ============================================================
+   Design tokens — the single source of truth for the whole app.
+
+   This is the ONLY file allowed to contain raw color literals
+   (hex / rgba). Everything else must reference these variables.
+   The `lint:css` script enforces that rule in CI. See STYLE.md.
+   ============================================================ */
+:root {
+  color-scheme: light;
+
+  /* Monochrome ink scale */
+  --ink: #18181b;
+  --ink-soft: #3f3f46;
+  --muted: #6b7280;
+  --soft: #9ca3af;
+  --faint: #c4c7cc;
+
+  /* Pressed state for primary (ink) buttons */
+  --ink-strong: #000;
+
+  /* Surfaces */
+  --bg: #ffffff;
+  --surface: #fafafa;
+  --surface-2: #f4f4f5;
+  --surface-3: #ececee;
+
+  /* Hairlines */
+  --line: #ececee;
+  --line-2: #e0e0e3;
+  --line-3: #d2d3d7;
+
+  /* Single highlight — reserved for AI affordances */
+  --accent: #2f6fed;
+  --accent-ink: #1d4fb8;
+  --accent-soft: rgba(47, 111, 237, 0.09);
+  --accent-line: rgba(47, 111, 237, 0.32);
+  --sel-highlight: rgba(47, 111, 237, 0.18);
+
+  /* Danger / destructive */
+  --danger: #8a3a2b;
+  --danger-bg: #fbf0ed;
+  --danger-line: #e7c9c2;
+
+  /* Overlays & elevation */
+  --backdrop: rgba(24, 24, 27, 0.28);
+  --shadow-pop: 0 10px 30px rgba(24, 24, 27, 0.16);
+  --shadow-modal: 0 18px 50px rgba(24, 24, 27, 0.22);
+  --shadow-float: 0 4px 14px rgba(24, 24, 27, 0.14);
+
+  /* Type */
+  --mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+  --ui: "Inter", "SF Pro Text", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --serif: "Iowan Old Style", "Palatino", "Georgia", serif;
+}

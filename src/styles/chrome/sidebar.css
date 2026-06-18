@@ -1,0 +1,119 @@
+/* Sidebar: new-doc action, document list, vault footer. */
+.sidebar {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.side-head {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.new-doc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.new-doc:hover {
+  border-color: var(--line-3);
+}
+
+.new-doc:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+.docs {
+  min-height: 0;
+  overflow: auto;
+  padding: 8px;
+}
+
+.docs-label {
+  margin: 8px 0 4px;
+  padding: 0 8px;
+  color: var(--soft);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.doc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  margin: 1px 0;
+  padding: 6px 9px;
+  border-radius: 7px;
+  text-align: left;
+}
+
+.doc:not(.active):hover {
+  background: var(--surface-2);
+}
+
+.doc.active {
+  background: var(--surface-3);
+}
+
+.doc-name {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc.active .doc-name {
+  color: var(--ink);
+  font-weight: 550;
+}
+
+.doc-time {
+  flex: none;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.sidebar-foot {
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--soft);
+  font-size: 11px;
+}
+
+.vault-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  color: var(--muted);
+}
+
+.vault-pick:hover {
+  color: var(--ink);
+}
+
+.vault-pick .path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

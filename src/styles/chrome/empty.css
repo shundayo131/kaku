@@ -1,0 +1,57 @@
+/* Empty state shown when no document is open. */
+.empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.empty h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.empty p {
+  margin: 0;
+  max-width: 360px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.empty-actions {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.empty .btn-primary {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.empty .btn-primary:hover {
+  background: var(--ink-strong);
+}
+
+.empty .btn-link {
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.empty .btn-link:hover {
+  color: var(--ink);
+}

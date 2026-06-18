@@ -1,0 +1,66 @@
+/* Title bar (draggable, overlays the macOS traffic lights). */
+.titlebar {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) auto;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  /* Drag regions must not be text-selectable, or a drag selects text instead
+     of moving the window. */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.titlebar .title {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 550;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titlebar .title .saved {
+  margin-left: 8px;
+  padding: 1px 6px 2px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--surface-2);
+  color: var(--soft);
+  font-size: 10px;
+  font-family: var(--mono);
+}
+
+.titlebar .title .saved.dirty {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.titlebar .right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-right: 12px;
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}

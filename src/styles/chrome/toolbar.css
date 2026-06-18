@@ -1,0 +1,45 @@
+/* Formatting toolbar (bold, italic, headings, …). */
+.format-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: 42px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.tb {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.tb:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.tb.on {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.tb:disabled {
+  color: var(--faint);
+}
+
+.tb-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 5px;
+  background: var(--line-2);
+}

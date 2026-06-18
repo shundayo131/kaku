@@ -1,0 +1,19 @@
+/* Style entry point. Imported once from main.tsx.
+
+   Order matters: tokens first (the contract), then base, then chrome
+   regions, then the editor content domain. Within equal specificity
+   this order is the cascade order — keep it stable. See STYLE.md. */
+@import "./tokens.css";
+@import "./base.css";
+
+@import "./chrome/titlebar.css";
+@import "./chrome/workspace.css";
+@import "./chrome/sidebar.css";
+@import "./chrome/editor-pane.css";
+@import "./chrome/toolbar.css";
+
+@import "./editor.css";
+
+@import "./chrome/inline-edit.css";
+@import "./chrome/empty.css";
+@import "./chrome/settings.css";

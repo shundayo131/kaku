@@ -1,0 +1,155 @@
+/* Settings modal: provider keys and active-model selection. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  background: var(--backdrop);
+}
+
+.settings-modal {
+  width: 100%;
+  max-width: 460px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line-3);
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow-modal);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sheet-head strong {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.settings-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  overflow: auto;
+}
+
+.disclosure {
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.keys-section-label {
+  color: var(--soft);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.keys {
+  display: grid;
+  gap: 14px;
+}
+
+.key-field {
+  display: grid;
+  gap: 7px;
+}
+
+.key-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.key-field label {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.key-status {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.key-row {
+  display: flex;
+  gap: 7px;
+}
+
+.key-row input {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  outline: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.key-row input:focus {
+  border-color: var(--line-3);
+}
+
+.key-row input::placeholder {
+  color: var(--soft);
+}
+
+.btn.ghost {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.btn.ghost:hover {
+  border-color: var(--line-3);
+  color: var(--danger);
+}
+
+.error-banner.inline {
+  border: 1px solid var(--danger-line);
+  border-radius: 8px;
+}
+
+.active-model {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 7px;
+}
+
+.active-model select,
+.active-model input {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  outline: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.active-model select:focus,
+.active-model input:focus {
+  border-color: var(--line-3);
+}

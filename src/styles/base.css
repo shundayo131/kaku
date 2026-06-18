@@ -1,0 +1,38 @@
+/* Reset, document defaults, and the root app grid. */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: default;
+  background: transparent;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: 38px minmax(0, 1fr);
+  height: 100%;
+}
