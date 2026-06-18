@@ -107,6 +107,15 @@ export function Editor({ content, onChange }: Props) {
               e.preventDefault();
               openFromSelection(true);
             }
+            // While a suggestion is shown: ⌘Y keep, ⌘N undo (matches the bar).
+            if (suggesting && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+              e.preventDefault();
+              acceptInline();
+            }
+            if (suggesting && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
+              e.preventDefault();
+              closeAll();
+            }
           }}
         >
           <EditorContent editor={editor} />
@@ -121,19 +130,20 @@ export function Editor({ content, onChange }: Props) {
               ))}
             </div>
           )}
+          {edit && (
+            <InlineEdit
+              key={`${edit.from}-${edit.to}`}
+              anchorTop={edit.anchorTop}
+              autoFocus={edit.autoFocus}
+              original={edit.original}
+              buildPrompt={buildEditPrompt}
+              run={runConversation}
+              onDraft={showDraft}
+              onClose={closeAll}
+            />
+          )}
         </div>
       </div>
-      {edit && (
-        <InlineEdit
-          key={`${edit.from}-${edit.to}`}
-          autoFocus={edit.autoFocus}
-          original={edit.original}
-          buildPrompt={buildEditPrompt}
-          run={runConversation}
-          onDraft={showDraft}
-          onClose={closeAll}
-        />
-      )}
     </div>
   );
 }

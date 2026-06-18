@@ -21,12 +21,13 @@ _Last updated: 2026-06-18._
 - **WYSIWYG editor** (Tiptap + tiptap-markdown): toolbar (Text/H1–H3, bold,
   italic, strike, inline code, link, lists, quote, code block, **table**,
   undo/redo), Markdown round-trip.
-- **Inline AI edit**: select → ⌘K/auto panel → quick actions or multi-line
-  instruction → draft. The whole document is sent as context (capped). Drafts
-  render **inline in the editor** (old struck-through, new highlighted) with
-  in-document ✓/✕; the panel becomes a **multi-turn refine** box ("ask for
-  another change"). Doesn't steal editor focus. Thinking on by default;
-  web search opt-in via Settings (off by default — queries leave the device).
+- **Inline AI edit** (Cursor-style): select → floating box **above** the
+  selection → quick actions or multi-line instruction → draft. The whole
+  document is sent as cache-controlled context. Drafts render **inline as an
+  old(red)→new(green) diff** with a **Keep ⌘Y / Undo ⌘N** bar at the diff; the
+  box stays above (outside the diff) as a **multi-turn refine** input. Doesn't
+  steal editor focus. Thinking on by default; web search opt-in via Settings
+  (off by default — queries leave the device).
 - **Blank-line preservation** (invisible ZWSP marker on empty paragraphs).
 - **Frontmatter passthrough**: YAML block sliced on load, reattached byte-exact
   on save.

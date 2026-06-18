@@ -84,6 +84,9 @@ function renderSuggestion(
   text: string,
   handlers: AiSuggestionHandlers,
 ): HTMLElement {
+  // A block holding the proposed "new" text (green) with a Keep/Undo bar pinned
+  // to its bottom-right. The original selection is tinted red by the inline
+  // decoration above, giving an old→new diff in the document flow.
   const wrap = document.createElement("span");
   wrap.className = "ai-sug";
   wrap.contentEditable = "false";
@@ -92,20 +95,19 @@ function renderSuggestion(
   ins.className = "ai-sug-new";
   ins.textContent = text;
 
-  const actions = document.createElement("span");
-  actions.className = "ai-sug-actions";
-  actions.append(
-    suggestionButton("✓", "Accept", "ai-sug-accept", handlers.onAccept),
-    suggestionButton("✕", "Reject", "ai-sug-reject", handlers.onReject),
+  const bar = document.createElement("span");
+  bar.className = "ai-sug-bar";
+  bar.append(
+    suggestionButton("Undo ⌘N", "ai-sug-undo", handlers.onReject),
+    suggestionButton("Keep ⌘Y", "ai-sug-keep", handlers.onAccept),
   );
 
-  wrap.append(ins, actions);
+  wrap.append(ins, bar);
   return wrap;
 }
 
 function suggestionButton(
   label: string,
-  title: string,
   className: string,
   onClick: () => void,
 ): HTMLButtonElement {
@@ -113,7 +115,6 @@ function suggestionButton(
   b.type = "button";
   b.className = `ai-sug-btn ${className}`;
   b.textContent = label;
-  b.title = title;
   // Use mousedown + preventDefault so the press fires before the editor's
   // selection logic and never bubbles to the surface's "close panel" handler.
   b.addEventListener("mousedown", (e) => {

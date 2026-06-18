@@ -21,23 +21,23 @@
   background: var(--accent-soft);
 }
 
-/* Docked as a slim bar at the bottom of the editor pane (not floating over the
- * selection) so the inline suggestion in the document stays fully visible. */
+/* Floats just above the selection (so it never covers the diff, which renders
+ * at/below the selection). Anchored at the selection top via inline `top`, then
+ * shifted up by its own height. */
 .inline-edit {
-  flex: none;
+  position: absolute;
+  left: 56px;
+  z-index: 6;
+  width: calc(100% - 112px);
+  transform: translateY(calc(-100% - 8px));
   display: grid;
   gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--line-2);
+  padding: 10px;
+  border: 1px solid var(--line-3);
+  border-radius: 10px;
   background: var(--bg);
   box-shadow: var(--shadow-pop);
   font-family: var(--ui);
-}
-
-.inline-edit > * {
-  width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
 }
 
 .ie-quick {

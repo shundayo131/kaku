@@ -23,6 +23,9 @@ type Edit = {
   from: number;
   to: number;
   original: string;
+  /** Y of the selection's top, relative to the surface. The box floats above
+   * this so it never covers the diff (which renders at/below the selection). */
+  anchorTop: number;
   autoFocus: boolean;
 };
 
@@ -65,8 +68,9 @@ export function useAiEdit(
       if (!editor || !surface || from === to) return;
       const original = editor.state.doc.textBetween(from, to, "\n");
       const sr = surface.getBoundingClientRect();
+      const coords = editor.view.coordsAtPos(from);
       setHlRects(rangeRects(editor, from, to, sr));
-      setEdit({ from, to, original, autoFocus });
+      setEdit({ from, to, original, anchorTop: coords.top - sr.top, autoFocus });
     },
     [editor, surfaceRef],
   );

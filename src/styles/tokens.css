@@ -36,10 +36,15 @@
   --accent-line: rgba(47, 111, 237, 0.32);
   --sel-highlight: rgba(47, 111, 237, 0.18);
 
-  /* Danger / destructive */
+  /* Danger / destructive (also the "removed" side of an AI diff) */
   --danger: #8a3a2b;
   --danger-bg: #fbf0ed;
   --danger-line: #e7c9c2;
+
+  /* Success / added (the "new" side of an AI diff) */
+  --success: #1f7a44;
+  --success-bg: #eaf6ee;
+  --success-line: #bfe3c9;
 
   /* Overlays & elevation */
   --backdrop: rgba(24, 24, 27, 0.28);

@@ -17,6 +17,7 @@ const QUICK_ACTIONS = [
 type Phase = "input" | "loading" | "preview";
 
 type Props = {
+  anchorTop: number;
   original: string;
   autoFocus: boolean;
   /** Builds the opening user turn (instruction + selection + doc context). */
@@ -29,6 +30,7 @@ type Props = {
 };
 
 export function InlineEdit({
+  anchorTop,
   original,
   autoFocus,
   buildPrompt,
@@ -116,6 +118,7 @@ export function InlineEdit({
   return (
     <div
       className="inline-edit"
+      style={{ top: anchorTop }}
       onMouseDown={(e) => e.stopPropagation()}
       onMouseUp={(e) => e.stopPropagation()}
       onKeyDown={(e) => {
@@ -127,8 +130,8 @@ export function InlineEdit({
     >
       {hasDraft && (
         <div className="ie-draft-hint">
-          Review the change in the document — accept ✓ or reject ✕ inline, or
-          ask for another change below.
+          Review the diff below — Keep (⌘Y) or Undo (⌘N), or ask for another
+          change here.
         </div>
       )}
 
