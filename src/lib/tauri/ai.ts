@@ -16,6 +16,9 @@ export type CompleteArgs = {
   /** Server-side web search tool (Anthropic). Off unless set — opt-in, since
    * queries leave the device. */
   webSearch?: boolean;
+  /** Document context attached as a cache-controlled block at the head of the
+   * first turn — stable across refines, so prompt caching can reuse it. */
+  documentContext?: string;
 };
 
 export const modelComplete = (args: CompleteArgs): Promise<string> =>

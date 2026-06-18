@@ -76,40 +76,43 @@ export function useAiEdit(
     setHlRects([]);
   }, []);
 
-  /** Build the opening user turn: the instruction, the selection to rewrite,
-   * and (capped) the surrounding document for context. */
-  const buildEditPrompt = useCallback(
-    (instruction: string, original: string) => {
+  /** Build the opening user turn: just the instruction and the selection to
+   * rewrite. The document is sent separately (see runConversation) so it can be
+   * cache-controlled and reused across refine turns. */
+  const buildEditPrompt = useCallback((instruction: string, original: string) => {
+    return `Instruction: ${instruction}\n\nText to rewrite (a selection from the document):\n${original}`;
+  }, []);
+
+  /** Run a conversation through the active model and return the trimmed text.
+   * Multi-turn: pass the running [user, assistant, user, …] history to refine.
+   * The (capped) document is passed as cache-controlled context each call —
+   * stable across refines, so prompt caching reuses it. */
+  const runConversation = useCallback(
+    async (messages: ChatMessage[]) => {
+      const { provider, model } = getActiveModel();
+      const { thinking, webSearch } = getAiPrefs();
       const doc = editor ? getMarkdown(editor).trim() : "";
-      const context =
-        doc && doc !== original.trim()
-          ? `Full document (for context only — do NOT rewrite all of it):\n"""\n${
-              doc.length > MAX_CONTEXT_CHARS
-                ? `${doc.slice(0, MAX_CONTEXT_CHARS)}\n…[truncated]`
-                : doc
-            }\n"""\n\n`
-          : "";
-      return `${context}Instruction: ${instruction}\n\nText to rewrite (a selection from the document above):\n${original}`;
+      const documentContext = doc
+        ? `Full document (for context only — do NOT rewrite all of it):\n"""\n${
+            doc.length > MAX_CONTEXT_CHARS
+              ? `${doc.slice(0, MAX_CONTEXT_CHARS)}\n…[truncated]`
+              : doc
+          }\n"""`
+        : undefined;
+      const text = await modelComplete({
+        provider,
+        model,
+        system: EDIT_SYSTEM,
+        messages,
+        documentContext,
+        maxTokens: 1024,
+        thinking,
+        webSearch,
+      });
+      return text.trim();
     },
     [editor],
   );
-
-  /** Run a conversation through the active model and return the trimmed text.
-   * Multi-turn: pass the running [user, assistant, user, …] history to refine. */
-  const runConversation = useCallback(async (messages: ChatMessage[]) => {
-    const { provider, model } = getActiveModel();
-    const { thinking, webSearch } = getAiPrefs();
-    const text = await modelComplete({
-      provider,
-      model,
-      system: EDIT_SYSTEM,
-      messages,
-      maxTokens: 1024,
-      thinking,
-      webSearch,
-    });
-    return text.trim();
-  }, []);
 
   const acceptEdit = useCallback(
     (result: string) => {

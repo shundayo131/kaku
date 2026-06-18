@@ -24,6 +24,7 @@ pub struct ChatMessage {
 
 /// A single non-streaming completion over a multi-turn message list.
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn model_complete(
     provider: String,
     model: String,
@@ -32,12 +33,14 @@ pub async fn model_complete(
     max_tokens: Option<u32>,
     thinking: Option<bool>,
     web_search: Option<bool>,
+    document_context: Option<String>,
 ) -> Result<String, String> {
     let thinking = thinking.unwrap_or(false);
     let web_search = web_search.unwrap_or(false);
     eprintln!(
-        "[kaku] model_complete: provider={provider} model={model} turns={} thinking={thinking} web_search={web_search}",
-        messages.len()
+        "[kaku] model_complete: provider={provider} model={model} turns={} thinking={thinking} web_search={web_search} doc_ctx={}",
+        messages.len(),
+        document_context.is_some()
     );
     let key = match crate::keys::get_key(&provider) {
         Ok(k) => k,
@@ -55,20 +58,21 @@ pub async fn model_complete(
             content: scrub(&m.content),
         })
         .collect();
+    let document_context = document_context.map(|d| scrub(&d));
     let max_tokens = max_tokens.unwrap_or(512);
 
     let result = match provider.as_str() {
         "anthropic" => {
-            anthropic_complete(
-                &key,
+            let body = build_anthropic_body(
                 &model,
                 system.as_deref(),
                 &messages,
                 max_tokens,
                 thinking,
                 web_search,
-            )
-            .await
+                document_context.as_deref(),
+            );
+            anthropic_complete(&key, body).await
         }
         other => Err(format!("Provider not yet supported: {other}")),
     };
@@ -79,19 +83,43 @@ pub async fn model_complete(
     result
 }
 
+/// Build the Anthropic request body (pure — no IO, so it's unit-testable).
+///
+/// When `document_context` is present it becomes a separate, cache-controlled
+/// text block at the head of the first user turn. Splitting it out (rather than
+/// concatenating it into the instruction) keeps it byte-stable across refine
+/// turns and repeat edits, so prompt caching can reuse it.
 #[allow(clippy::too_many_arguments)]
-async fn anthropic_complete(
-    key: &str,
+fn build_anthropic_body(
     model: &str,
     system: Option<&str>,
     messages: &[ChatMessage],
     max_tokens: u32,
     thinking: bool,
     web_search: bool,
-) -> Result<String, String> {
+    document_context: Option<&str>,
+) -> serde_json::Value {
     let msgs: Vec<serde_json::Value> = messages
         .iter()
-        .map(|m| serde_json::json!({ "role": m.role, "content": m.content }))
+        .enumerate()
+        .map(|(i, m)| {
+            if i == 0 {
+                if let Some(doc) = document_context {
+                    return serde_json::json!({
+                        "role": m.role,
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": doc,
+                                "cache_control": { "type": "ephemeral" }
+                            },
+                            { "type": "text", "text": m.content }
+                        ]
+                    });
+                }
+            }
+            serde_json::json!({ "role": m.role, "content": m.content })
+        })
         .collect();
 
     // Extended thinking consumes part of the response budget, so reserve extra
@@ -121,7 +149,10 @@ async fn anthropic_complete(
             { "type": "web_search_20250305", "name": "web_search", "max_uses": 5 }
         ]);
     }
+    body
+}
 
+async fn anthropic_complete(key: &str, body: serde_json::Value) -> Result<String, String> {
     let resp = reqwest::Client::new()
         .post(ANTHROPIC_URL)
         .header("x-api-key", key)
@@ -221,5 +252,47 @@ mod tests {
     #[test]
     fn empty_input() {
         assert_eq!(scrub(""), "");
+    }
+
+    fn user(content: &str) -> ChatMessage {
+        ChatMessage {
+            role: "user".into(),
+            content: content.into(),
+        }
+    }
+
+    #[test]
+    fn doc_context_becomes_a_cached_first_block() {
+        let msgs = [user("Instruction: shorten")];
+        let body = build_anthropic_body("m", None, &msgs, 1024, false, false, Some("THE DOC"));
+        let first = &body["messages"][0]["content"];
+        assert_eq!(first[0]["text"], "THE DOC");
+        assert_eq!(first[0]["cache_control"]["type"], "ephemeral");
+        assert_eq!(first[1]["text"], "Instruction: shorten");
+    }
+
+    #[test]
+    fn no_doc_context_keeps_plain_string_content() {
+        let msgs = [user("hello")];
+        let body = build_anthropic_body("m", None, &msgs, 1024, false, false, None);
+        assert_eq!(body["messages"][0]["content"], "hello");
+        assert!(body.get("thinking").is_none());
+        assert!(body.get("tools").is_none());
+    }
+
+    #[test]
+    fn thinking_enables_block_and_reserves_budget() {
+        let msgs = [user("x")];
+        let body = build_anthropic_body("m", None, &msgs, 1024, true, false, None);
+        assert_eq!(body["thinking"]["type"], "enabled");
+        assert_eq!(body["thinking"]["budget_tokens"], THINKING_BUDGET);
+        assert_eq!(body["max_tokens"], 1024 + THINKING_BUDGET);
+    }
+
+    #[test]
+    fn web_search_adds_the_tool() {
+        let msgs = [user("x")];
+        let body = build_anthropic_body("m", None, &msgs, 1024, false, true, None);
+        assert_eq!(body["tools"][0]["name"], "web_search");
     }
 }
