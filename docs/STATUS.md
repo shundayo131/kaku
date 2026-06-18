@@ -16,12 +16,17 @@ _Last updated: 2026-06-18._
   masked in UI, never returned to JS. Settings UI + active-model selector +
   disclosure copy.
 - **AI gateway** (Rust, non-streaming `model_complete`): **Anthropic adapter only**,
-  with outbound `sk-…` scrub.
+  multi-turn `messages[]`, optional extended thinking + server-side web-search
+  tool, multi-block response parsing, outbound `sk-…` scrub.
 - **WYSIWYG editor** (Tiptap + tiptap-markdown): toolbar (Text/H1–H3, bold,
   italic, strike, inline code, link, lists, quote, code block, **table**,
   undo/redo), Markdown round-trip.
-- **Inline AI edit**: select → ⌘K/auto panel → quick actions or instruction →
-  preview → accept (replaces selection). Doesn't steal editor focus.
+- **Inline AI edit**: select → ⌘K/auto panel → quick actions or multi-line
+  instruction → draft. The whole document is sent as context (capped). Drafts
+  render **inline in the editor** (old struck-through, new highlighted) with
+  in-document ✓/✕; the panel becomes a **multi-turn refine** box ("ask for
+  another change"). Doesn't steal editor focus. Thinking on by default;
+  web search opt-in via Settings (off by default — queries leave the device).
 - **Blank-line preservation** (invisible ZWSP marker on empty paragraphs).
 - **Frontmatter passthrough**: YAML block sliced on load, reattached byte-exact
   on save.
@@ -49,12 +54,17 @@ _Last updated: 2026-06-18._
 
 - Blank lines stored with invisible zero-width markers (chosen tradeoff).
 - `tiptap-markdown` is community, `0.9.0` — watch maintenance.
-- JS bundle ~750 kB (Tiptap/ProseMirror); could code-split. Fine for desktop.
+- JS bundle ~800 kB (Tiptap/ProseMirror); loads from disk, fine for desktop.
 - `npm audit`: 1 low (esbuild dev-server, Windows-only, dev-only).
-- Styling is **plain CSS**, not Tailwind v4 (AGENTS.md prefers Tailwind).
+- Styling is **plain CSS + design tokens** by design (see STYLE.md); `lint:css`
+  bans raw colors outside `tokens.css`. No Tailwind/shadcn (documented choice).
 - Unsigned dev builds → macOS Keychain re-prompts after rebuilds (signed
   release builds won't).
-- `@tiptap/extension-link` is redundant (StarterKit bundles it); harmless.
+- Six declared-but-unused deps (`katex`, `@tiptap/extension-mathematics`,
+  `@tiptap/extension-link`, `@tiptap/extension-table-{cell,header,row}`) —
+  tree-shaken out of the bundle; removable when math is wired or as cleanup.
+- Inline AI suggestion (Phase D) is best-effort for multi-paragraph selections;
+  needs a live run to validate the ProseMirror decoration UX end-to-end.
 
 ## Identity (for any rename)
 
