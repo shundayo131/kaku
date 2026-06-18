@@ -116,8 +116,8 @@ not secret. Only the `x-api-key` header — added in Rust — is.
 
 ## Settings & key management
 
-The settings screen manages **only Writer's own Keychain items**, scoped to the
-app's service (`com.shunito.writer`). It must **not** enumerate or read other
+The settings screen manages **only Kaku's own Keychain items**, scoped to the
+app's service (`com.shunito.kaku`). It must **not** enumerate or read other
 apps' Keychain entries — that is invasive and would look malicious in an
 open-source app.
 
@@ -129,7 +129,7 @@ open-source app.
   secret back into the webview and defeat the boundary. Lost a key → paste a new
   one.
 
-**Data model.** Secret in Keychain as `(service: "com.shunito.writer",
+**Data model.** Secret in Keychain as `(service: "com.shunito.kaku",
 account: "<provider-id>")` — `anthropic`, `openai`, `gemini`, `kimi`. The masked
 form (last-4) is computed in Rust from the stored key when `list_keys` runs, so no
 separate metadata store is needed in v1.

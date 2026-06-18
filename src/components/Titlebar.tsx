@@ -26,7 +26,7 @@ export function Titlebar({ title, status, busy, hasDoc, onOpenSettings }: Props)
             </span>
           </>
         ) : (
-          "Writer"
+          "Kaku"
         )}
       </div>
       <div className="right" data-tauri-drag-region>

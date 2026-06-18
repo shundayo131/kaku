@@ -1,11 +1,11 @@
-# Writer
+# Kaku
 
 A local-first Markdown writing app for macOS with inline AI editing and an AI
 writing companion.
 
 ## Product Direction
 
-Writer is a single-user desktop app. It edits real Markdown files in a folder
+Kaku is a single-user desktop app. It edits real Markdown files in a folder
 chosen by the user, similar to an Obsidian-style vault. There is no account
 system, cloud sync, or backend server. The durable document format is plain
 Markdown.

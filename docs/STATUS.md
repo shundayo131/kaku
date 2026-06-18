@@ -59,6 +59,6 @@ _Last updated: 2026-06-18._
 ## Identity (for any rename)
 
 App/Keychain identity lives in `src-tauri/tauri.conf.json` (`identifier`,
-`productName`) and `keys.rs` `SERVICE` (`com.shunito.writer`). Renaming the repo
+`productName`) and `keys.rs` `SERVICE` (`com.shunito.kaku`). Renaming the repo
 **folder** does not affect these. Renaming the **app** would change the Keychain
 service name and need a one-time key migration.

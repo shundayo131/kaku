@@ -1,6 +1,6 @@
 # Security
 
-Security model and pre-release gate for Writer — an **open-source, distributed**
+Security model and pre-release gate for Kaku — an **open-source, distributed**
 macOS app where each user supplies **their own** API key. See
 [ARCHITECTURE.md](./ARCHITECTURE.md) for the TS/Rust boundary this builds on.
 

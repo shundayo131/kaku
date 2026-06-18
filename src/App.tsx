@@ -74,7 +74,7 @@ export default function App() {
   return (
     <main className="app">
       <Titlebar
-        title={activeName ? titleOf(activeName) : "Writer"}
+        title={activeName ? titleOf(activeName) : "Kaku"}
         status={status}
         busy={dirty || saving}
         hasDoc={!!activeName}
@@ -117,7 +117,7 @@ export default function App() {
               <div className="empty">
                 <h2>Start writing</h2>
                 <p>
-                  Writer edits ordinary Markdown files on disk. Open one, or
+                  Kaku edits ordinary Markdown files on disk. Open one, or
                   create a new document — nothing is copied into a hidden
                   database.
                 </p>

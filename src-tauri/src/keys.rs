@@ -7,7 +7,7 @@
 use keyring::{Entry, Error as KeyringError};
 use serde::Serialize;
 
-const SERVICE: &str = "com.shunito.writer";
+const SERVICE: &str = "com.shunito.kaku";
 
 /// Fixed, known provider set. (id, display label)
 const PROVIDERS: &[(&str, &str)] = &[
