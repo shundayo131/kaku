@@ -2,13 +2,21 @@ import { useCallback, useState, type RefObject } from "react";
 import type { Editor } from "@tiptap/react";
 import type { Rect } from "../types";
 import { getActiveModel } from "../lib/model";
+import { getMarkdown } from "../lib/markdown";
 import { modelComplete } from "../lib/tauri/ai";
 
 const EDIT_SYSTEM =
-  "You are an inline editor in a Markdown writing app. Rewrite the user's " +
-  "selected text to satisfy their instruction. Output ONLY the rewritten text " +
-  "— no preamble, quotation marks, code fences, or commentary. Preserve the " +
-  "author's voice.";
+  "You are an inline editor in a Markdown writing app. You rewrite the user's " +
+  "SELECTED text to satisfy their instruction. You may be given the full " +
+  "document for context — use it to match the surrounding voice, terminology, " +
+  "and flow, but rewrite ONLY the selected text. Output ONLY the rewritten " +
+  "selection — no preamble, quotation marks, code fences, or commentary. " +
+  "Preserve the author's voice.";
+
+/** Cap on document context sent for an edit — keeps prompts cheap. Most docs
+ * are well under this; longer ones are truncated (the selection is sent in
+ * full regardless, so context loss is graceful). */
+const MAX_CONTEXT_CHARS = 12000;
 
 type Edit = {
   from: number;
@@ -69,17 +77,29 @@ export function useAiEdit(
     setHlRects([]);
   }, []);
 
-  const requestEdit = useCallback(async (instruction: string, original: string) => {
-    const { provider, model } = getActiveModel();
-    const text = await modelComplete({
-      provider,
-      model,
-      system: EDIT_SYSTEM,
-      prompt: `Instruction: ${instruction}\n\nText to rewrite:\n${original}`,
-      maxTokens: 1024,
-    });
-    return text.trim();
-  }, []);
+  const requestEdit = useCallback(
+    async (instruction: string, original: string) => {
+      const { provider, model } = getActiveModel();
+      const doc = editor ? getMarkdown(editor).trim() : "";
+      const context =
+        doc && doc !== original.trim()
+          ? `Full document (for context only — do NOT rewrite all of it):\n"""\n${
+              doc.length > MAX_CONTEXT_CHARS
+                ? `${doc.slice(0, MAX_CONTEXT_CHARS)}\n…[truncated]`
+                : doc
+            }\n"""\n\n`
+          : "";
+      const text = await modelComplete({
+        provider,
+        model,
+        system: EDIT_SYSTEM,
+        prompt: `${context}Instruction: ${instruction}\n\nText to rewrite (a selection from the document above):\n${original}`,
+        maxTokens: 1024,
+      });
+      return text.trim();
+    },
+    [editor],
+  );
 
   const acceptEdit = useCallback(
     (result: string) => {

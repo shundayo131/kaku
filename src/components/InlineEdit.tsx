@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 const QUICK_ACTIONS = [
   { label: "Fix grammar", instruction: "Fix grammar and spelling. Preserve meaning and tone." },
@@ -31,13 +37,21 @@ export function InlineEdit({
   const [result, setResult] = useState("");
   const [error, setError] = useState<string | null>(null);
   const lastInstruction = useRef("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     // Only steal focus from the editor when explicitly invoked (⌘K), so a
     // mouse selection leaves the editor editable (Delete/typing still work).
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
+
+  // Grow the textarea with its content, up to the CSS max-height (then scroll).
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [instruction, phase]);
 
   const run = useCallback(
     async (instr: string) => {
@@ -91,14 +105,17 @@ export function InlineEdit({
             ))}
           </div>
           <div className="ie-input-row">
-            <input
+            <textarea
               ref={inputRef}
+              className="ie-textarea"
+              rows={1}
               value={instruction}
               disabled={phase === "loading"}
               placeholder={phase === "loading" ? "Editing…" : "Describe the edit…"}
               onChange={(e) => setInstruction(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                // Enter submits; Shift+Enter inserts a newline.
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   void run(instruction);
                 }

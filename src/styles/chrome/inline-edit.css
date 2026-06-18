@@ -65,26 +65,30 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 30px 30px;
   gap: 6px;
-  align-items: center;
+  align-items: end;
 }
 
-.ie-input-row input {
-  height: 32px;
+.ie-textarea {
+  min-height: 32px;
+  max-height: 160px;
   min-width: 0;
-  padding: 0 10px;
+  padding: 6px 10px;
   border: 1px solid var(--line-2);
   border-radius: 8px;
   outline: 0;
   background: var(--bg);
   color: var(--ink);
   font-size: 13px;
+  line-height: 1.45;
+  resize: none;
+  overflow-y: auto;
 }
 
-.ie-input-row input:focus {
+.ie-textarea:focus {
   border-color: var(--accent-line);
 }
 
-.ie-input-row input::placeholder {
+.ie-textarea::placeholder {
   color: var(--soft);
 }
 
