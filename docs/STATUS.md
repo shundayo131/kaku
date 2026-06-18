@@ -50,6 +50,17 @@ _Last updated: 2026-06-18._
 6. **Pre-release security** (see SECURITY.md checklist): code-sign + notarize,
    set a real CSP (`tauri.conf.json` `csp` is `null`), tighten fs scope from
    `$HOME/**` toward the vault, sanitize untrusted render.
+7. **Images in the editor** (paste / drag-drop / upload). Scoped, not built.
+   Local-first design: save bytes to a file (`<docDir>/assets/<name>.ext`) and
+   reference by **relative path** in Markdown (`![](assets/…)`) — never base64.
+   Pieces: Rust `save_asset(doc_path, bytes, ext)` command; ProseMirror
+   `handlePaste`/`handleDrop` + a toolbar upload button; a custom Tiptap image
+   node (no new dep) whose `renderHTML` resolves the relative path to an
+   `asset://` URL via `convertFileSrc`, while keeping the stored `src` relative
+   for the Markdown round-trip; enable + **scope** `app.security.assetProtocol`
+   in `tauri.conf.json` so the webview may load local files. Open decision:
+   storage location (recommended `assets/` next to the doc). Ties into the
+   item-6 security work (asset scope, untrusted image handling).
 
 ## Known debt / tradeoffs
 
