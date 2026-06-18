@@ -21,6 +21,9 @@ export function Editor({ content, onChange }: Props) {
   // render so the widget always calls the latest handlers.
   const handlersRef = useRef({ onAccept: () => {}, onReject: () => {} });
   const [suggesting, setSuggesting] = useState(false);
+  // Mirror for the editor's onSelectionUpdate, which is created once at mount.
+  const suggestingRef = useRef(false);
+  suggestingRef.current = suggesting;
 
   const extensions = useMemo(
     () => [
@@ -40,7 +43,9 @@ export function Editor({ content, onChange }: Props) {
     },
     onSelectionUpdate: ({ editor }: { editor: TiptapEditor }) => {
       // Editing (Delete/typing) collapses the selection → dismiss the panel.
-      if (editor.state.selection.empty) closeRef.current();
+      // But once a suggestion is pending, keep it sticky — only Keep/Undo
+      // should remove it, not an incidental click.
+      if (editor.state.selection.empty && !suggestingRef.current) closeRef.current();
     },
   });
 
@@ -100,7 +105,9 @@ export function Editor({ content, onChange }: Props) {
           ref={surfaceRef}
           onMouseUp={() => openFromSelection(false)}
           onMouseDown={() => {
-            if (edit) closeAll();
+            // Before a draft: clicking away cancels the input box. Once a
+            // suggestion is shown, clicking the doc must NOT discard it.
+            if (edit && !suggesting) closeAll();
           }}
           onKeyDown={(e) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
