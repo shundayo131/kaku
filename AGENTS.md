@@ -66,6 +66,8 @@ chosen folder.
   security-sensitive paths.
 - Never commit secrets, generated build folders, local vault contents, or app
   signing/notarization credentials.
+- Do not add `Co-Authored-By` trailers or other AI-attribution lines to commit
+  messages.
 
 ## Initial Product Scope
 
